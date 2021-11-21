@@ -10,6 +10,7 @@ const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
+const companySearchSchema = require("../schemas/companySearch.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
 
 const router = new express.Router();
@@ -52,7 +53,16 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
+    const query = req.query;
+    if (query.minEmployees !== undefined) query.minEmployees = parseInt(query.minEmployees);
+    if (query.maxEmployees !== undefined) query.maxEmployees = parseInt(query.maxEmployees);
+    const validator = jsonschema.validate(query, companySearchSchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
+    }
+
+    const companies = await Company.findAllWithFilter(query);
     return res.json({ companies });
   } catch (err) {
     return next(err);

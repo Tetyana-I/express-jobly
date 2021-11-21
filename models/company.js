@@ -44,22 +44,71 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
-   *
+  // /** Find all companies.
+  //  *
+  //  * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+  //  * */
+
+  // static async findAll() {
+  //   const companiesRes = await db.query(
+  //         `SELECT handle,
+  //                 name,
+  //                 description,
+  //                 num_employees AS "numEmployees",
+  //                 logo_url AS "logoUrl"
+  //          FROM companies
+  //          ORDER BY name`);
+  //   return companiesRes.rows;
+  // }
+
+
+/** Find all companies that are satisfied filtering criteria.
+   * Possible filter options: minEmployees, maxEmployees, name (will find case-insensitive, partial matches)
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
-    const companiesRes = await db.query(
-          `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
-    return companiesRes.rows;
+ static async findAllWithFilter(queryData = {}) {
+  let  queryString =
+       `SELECT handle,
+               name,
+               description,
+               num_employees AS "numEmployees",
+               logo_url AS "logoUrl"
+         FROM companies`;
+
+  const { name, minEmployees, maxEmployees} = queryData;
+  const whereSQLfilters = [];
+  const values = [];
+
+  if (minEmployees > maxEmployees) {
+    throw new BadRequestError("Min employees number cannot be greater than max employees number");
   }
+
+  if (minEmployees !== undefined) {
+    values.push(minEmployees);
+    whereSQLfilters.push(`num_employees >= $${values.length}`);
+  }
+
+  if (maxEmployees !== undefined) {
+    values.push(maxEmployees);
+    whereSQLfilters.push(`num_employees <= $${values.length}`);
+  }
+
+  if (name) {
+    values.push(`%${name}%`);
+    whereSQLfilters.push(`name ILIKE $${values.length}`);
+  }
+
+  if (whereSQLfilters.length > 0) {
+    queryString += " WHERE " + whereSQLfilters.join(" AND ");
+  }
+  
+  queryString += " ORDER BY name";
+  const companiesRes = await db.query(queryString, values);
+
+  return companiesRes.rows;
+}
+
 
   /** Given a company handle, return data about company.
    *
