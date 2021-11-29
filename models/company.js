@@ -44,23 +44,6 @@ class Company {
     return company;
   }
 
-  // /** Find all companies.
-  //  *
-  //  * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
-  //  * */
-
-  // static async findAll() {
-  //   const companiesRes = await db.query(
-  //         `SELECT handle,
-  //                 name,
-  //                 description,
-  //                 num_employees AS "numEmployees",
-  //                 logo_url AS "logoUrl"
-  //          FROM companies
-  //          ORDER BY name`);
-  //   return companiesRes.rows;
-  // }
-
 
 /** Find all companies that are satisfied filtering criteria.
    * Possible filter options: minEmployees, maxEmployees, name (will find case-insensitive, partial matches)
