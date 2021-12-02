@@ -348,7 +348,6 @@ const router = new express.Router();
 &nbsp;
 router.post("/", ensureAdmin, async function (req, res, next) {
   try {
-    console.log("I'm in router!");
     const validator = jsonschema.validate(req.body, companyNewSchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e =&gt; e.stack);

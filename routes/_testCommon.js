@@ -71,8 +71,9 @@ testJobIds[2] = (await Job.create(
     password: "password3",
     isAdmin: false,
   });
+  
+  await User.applyToJob("u1", testJobIds[0]);
 }
-
 
 async function commonBeforeEach() {
   await db.query("BEGIN");
